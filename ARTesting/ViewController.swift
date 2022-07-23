@@ -114,7 +114,7 @@ extension ViewController {
     }
     
     
-    func addCoordinates(){
+    func addCoordinates() {
         var cancel: AnyCancellable? = nil
         cancel = ModelEntity.loadAsync(named: "Test Coordinates")
             .sink(receiveCompletion: { error in
