@@ -1,0 +1,16 @@
+{
+  "images" : [
+    {
+      "filename" : "Screen Shot 2022-07-22 at 1.41.42 PM.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "unit" : "inches",
+    "width" : 13.5
+  }
+}
