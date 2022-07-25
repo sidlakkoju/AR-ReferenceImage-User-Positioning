@@ -14,7 +14,16 @@ class ViewController: UIViewController {
     @IBOutlet weak var lblUserPosition: UILabel!
     @IBOutlet weak var lblAnchorPosition: UILabel!
     
+    @IBOutlet weak var refImgLocation: UILabel!
+    @IBOutlet weak var userGeoLocation: UILabel!
+    
+    
+    
+    let refImageCoordinates: [Double] = [38.92356, -77.2060544]
+    let refImageHeading: Double = 322.309
+    
     var userPosition = SIMD3<Float>(x: 0.0, y: 0.0, z: 0.0)
+    
     
     
     var parentAnchor = AnchorEntity()
@@ -23,6 +32,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        refImgLocation.text = "(\(round(refImageCoordinates[0]*100)/100), \(round(refImageCoordinates[1]*100)/100))"
         
         configure()
         
@@ -65,7 +76,7 @@ extension ViewController: ARSessionDelegate {
         lblAnchorPosition.text =  "Anchor: (\(round(parentAnchor.transform.translation.x*10)/10), \(round(parentAnchor.transform.translation.x*10)/10)"
         lblAngle.text = "Angle: \(round(getUserHeading()*10)/10)"
         lblPosition.text = "Distance: \(round(getUserDistance()*10)/10)"
-        
+        displayUserCoordinates()
     }
     
     func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
@@ -124,6 +135,32 @@ extension ViewController {
                 self.parentAnchor.addChild(model)
                 cancel?.cancel()
             })
+    }
+    
+    
+    func displayUserCoordinates() {
+        var heading = Double(getUserHeading()) + (self.refImageHeading * (Double.pi / 180))
+        if (heading < 0) {  heading = (Double.pi * 2) + heading }
+        else {  heading = heading.truncatingRemainder(dividingBy: Double.pi * 2)    }
+        let userCoordinates = reverseHaversine(refLat: self.refImageCoordinates[0], refLng: self.refImageCoordinates[1], dist: Double(getUserDistance()), brngRad: heading)
+        self.userGeoLocation.text = "(\(round(userCoordinates[0]*1000000)/1000000), \(round(userCoordinates[1]*1000000)/1000000))"
+    }
+    
+    
+    func reverseHaversine(refLat: Double, refLng: Double, dist: Double, brngRad: Double) -> [Double] {
+        
+        let earthRadius: Double = 6378100 // Earth radius Meters
+        
+        // Convert degrees to radians
+        let lat1 = refLat * (Double.pi / 180)
+        let lng1 = refLng * (Double.pi / 180)
+        let brng = brngRad
+        
+        let lat2 = asin(sin(lat1)*cos(dist/earthRadius) + cos(lat1)*sin(dist/earthRadius)*cos(brng))
+        let lng2 = lng1 +  atan2(sin(brng)*sin(dist/earthRadius)*cos(lat1), cos(dist/earthRadius) - sin(lat1)*sin(lat2))
+        
+        // Convet lat2 and lng2 back to degrees
+        return [lat2 * (180 / Double.pi), lng2 * (180 / Double.pi)]
     }
     
     
